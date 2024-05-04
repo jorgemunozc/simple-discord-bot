@@ -13,7 +13,7 @@ struct Bot;
 impl EventHandler for Bot {
     async fn message(&self, ctx: Context, msg: Message) {
         if msg.content.contains("https://x.com") || msg.content.contains("https://twitter.com") {
-            let re = Regex::new(r"((?<protocol>https://)(?<host>x|twitter)(?<rest>.com\S*))").unwrap();
+            let re = Regex::new(r#"((?<protocol>https://)(?<host>x|twitter)(?<rest>.com\S*))"#).unwrap();
             let result = re.captures(&msg.content).unwrap();
             let new_url = format!("{}fxtwitter{}", &result["protocol"], &result["rest"]);
             if let Err(error) = msg.channel_id.say(&ctx.http, new_url).await {
