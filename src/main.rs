@@ -4,7 +4,7 @@ use serenity::async_trait;
 use serenity::model::channel::Message;
 use serenity::model::gateway::Ready;
 use serenity::prelude::*;
-use shuttle_secrets::SecretStore;
+use shuttle_runtime::SecretStore;
 use tracing::{error, info};
 
 struct Bot;
@@ -13,7 +13,8 @@ struct Bot;
 impl EventHandler for Bot {
     async fn message(&self, ctx: Context, msg: Message) {
         if msg.content.contains("https://x.com") || msg.content.contains("https://twitter.com") {
-            let re = Regex::new(r#"((?<protocol>https://)(?<host>x|twitter)(?<rest>.com\S*))"#).unwrap();
+            let re =
+                Regex::new(r#"((?<protocol>https://)(?<host>x|twitter)(?<rest>.com\S*))"#).unwrap();
             let result = re.captures(&msg.content).unwrap();
             let new_url = format!("{}fxtwitter{}", &result["protocol"], &result["rest"]);
             if let Err(error) = msg.channel_id.say(&ctx.http, new_url).await {
@@ -29,10 +30,10 @@ impl EventHandler for Bot {
 
 #[shuttle_runtime::main]
 async fn serenity(
-    #[shuttle_secrets::Secrets] secret_store: SecretStore,
+    #[shuttle_runtime::Secrets] secrets: SecretStore,
 ) -> shuttle_serenity::ShuttleSerenity {
     // Get the discord token set in `Secrets.toml`
-    let token = if let Some(token) = secret_store.get("DISCORD_TOKEN") {
+    let token = if let Some(token) = secrets.get("DISCORD_TOKEN") {
         token
     } else {
         return Err(anyhow!("'DISCORD_TOKEN' was not found").into());
