@@ -5,8 +5,8 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.66"
-shuttle-serenity = { version = "0.44.0" }
-shuttle-runtime = "0.44.0"
+shuttle-serenity = { version = "0.51.0" }
+shuttle-runtime = "0.51.0"
 serenity = { version = "0.12.0", default-features = false, features = [
     "client",
     "gateway",
