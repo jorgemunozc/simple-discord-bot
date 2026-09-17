@@ -1,2 +1,2 @@
-# TODO
-Extraer direccion url de mensaje y solo responder con url fixeada
+# Twitter url fix
+Replace x/twitter domain for fxtwitter so you can play videos/gif directly on discord

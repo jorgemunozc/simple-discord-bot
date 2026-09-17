@@ -1,0 +1,23 @@
+[Unit]
+Description=Twitter link fixer Discord bot
+#Enable only when *-wait-online service is enabled. Otherwise is not really that helpful
+#After=network-online.target 
+#Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/path-to-binary
+EnvironmentFile=/etc/twitter-bot/twitter-bot.env
+Restart=on-failure
+RestartSec=5
+
+# Hardening
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+User=twitterbot
+Group=twitterbot
+
+[Install]
+WantedBy=multi-user.target

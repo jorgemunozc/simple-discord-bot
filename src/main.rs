@@ -1,4 +1,5 @@
-use anyhow::{anyhow, Context as ct};
+use anyhow::{anyhow, Context as _};
+use once_cell::sync::Lazy;
 use regex::Regex;
 use serenity::async_trait;
 use serenity::model::channel::Message;
@@ -6,19 +7,31 @@ use serenity::model::gateway::Ready;
 use serenity::prelude::*;
 use tracing::{error, info};
 
+static TWITTER_LINK_RE: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r#"https?://(?:www\.|mobile\.)?(?:x|twitter)\.com(?P<rest>/\S*)"#)
+        .expect("valid regex")
+});
 struct Bot;
 
 #[async_trait]
 impl EventHandler for Bot {
     async fn message(&self, ctx: Context, msg: Message) {
-        if msg.content.contains("https://x.com") || msg.content.contains("https://twitter.com") {
-            let re =
-                Regex::new(r#"((?<protocol>https://)(?<host>x|twitter)(?<rest>.com\S*))"#).unwrap();
-            let result = re.captures(&msg.content).unwrap();
-            let new_url = format!("{}fxtwitter{}", &result["protocol"], &result["rest"]);
-            if let Err(error) = msg.channel_id.say(&ctx.http, new_url).await {
-                error!("Error sending message: {error:?}");
-            }
+        if msg.author.bot {
+            return;
+        }
+        let converted: Vec<String> = TWITTER_LINK_RE
+            .captures_iter(&msg.content)
+            .map(|caps| format!("https://fxtwitter.com{}", &caps["rest"]))
+            .collect();
+
+        if converted.is_empty() {
+            return;
+        }
+
+        let reply = converted.join("\n");
+
+        if let Err(error) = msg.channel_id.say(&ctx.http, reply).await {
+            error!("Error sending message: {error:?}");
         }
     }
 
@@ -29,7 +42,9 @@ impl EventHandler for Bot {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+
     dotenvy::dotenv().ok();
+    
     let token = std::env::var("DISCORD_TOKEN")
         .context("Environment variable for discord token not found.")?;
 
